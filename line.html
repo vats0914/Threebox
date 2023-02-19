@@ -45,10 +45,19 @@
 
     // randomly generate some line arcs (not essential for understanding this demo)
 
-    var line = new Array();
-    line.push([139.6503, 35.6762, 80000]);
-    line.push([-149.073, 62.4114, 9]);
+	var line = new Array();
+    var line1 = new Array();
+    line1.push([139.6503, 35.6762, 80000]);
+    line1.push([-149.073, 62.4114, 9]);
 	
+	var line2 = new Array();
+    
+    line2.push([-149.073, 62.4114, 9]);
+	line2.push([139.6503, 35.6762, 80000]);
+
+	var mLine = new Array();
+	mLine.push(line2);
+	mLine.push(line1);
     console.log("lineGeometries of the lines: ", line);
 
     // instantiate threebox
@@ -60,14 +69,16 @@
         onAdd: function (map, mbxContext) {
           tb = new Threebox(map, mbxContext, { defaultLights: true });
 
-          var lineOptions = {
-            geometry: createGeometry(true),
+        for(line of mLine){ 
+		  var lineOptions = {
+            geometry: createGeometry(true,line),
             color: (line[1][1] / 180) * 0xffffff, // color based on latitude of endpoint
             width: Math.random() + 1, // random width between 1 an
           };
           lineMesh = tb.line(lineOptions);
 
           tb.add(lineMesh);
+		}
         },
 
         render: function (gl, matrix) {
@@ -75,7 +86,7 @@
         },
       });
     });
-    function createGeometry(doesCrossAntimeridian) {
+    function createGeometry(doesCrossAntimeridian, line) {
       const geometry = line
 
       // To draw a line across the 180th meridian,
