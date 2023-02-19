@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<head>
+  <title>Line Example</title>
+  <script src="./threebox.js" type="text/javascript"></script>
+  <script src="config.js"></script>
+
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.js"></script>
+  <style>
+    body,
+    html {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      background: black;
+    }
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+	<script src="https://unpkg.com/three@0.126.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.126.0/examples/js/loaders/GLTFLoader.js"></script>
+  <div id="map" class="map"></div>
+
+  <script>
+    // this demo generates lineGeometry for 50 lines, and adds them as lines to the map with random widths, and colors based on latitudes of their unique endpoints
+
+    if (!config)
+      console.error(
+        "Config not set! Make a copy of 'config_template.js', add in your access token, and save the file as 'config.js'."
+      );
+
+    mapboxgl.accessToken = config.accessToken;
+
+    var map = new mapboxgl.Map({
+      container: "map",
+      style: "mapbox://styles/mapbox/light-v11",
+      zoom: 10,
+      pitch: 45,
+	  center:[-149.073, 62.4114, 9]
+    });
+
+    // randomly generate some line arcs (not essential for understanding this demo)
+
+    var lines = new Array();
+    lines.push([139.6503, 35.6762, 80000]);
+    lines.push([-149.073, 62.4114, 9]);
+
+    console.log("lineGeometries of the lines: ", lines);
+
+    // instantiate threebox
+
+    map.on("style.load", function () {
+      map.addLayer({
+        id: "custom_layer",
+        type: "custom",
+        onAdd: function (map, mbxContext) {
+          tb = new Threebox(map, mbxContext, { defaultLights: true });
+
+          const coords = createGeometry(true);
+          console.log(coords);
+          var lineOptions = {
+            geometry: coords,
+            color: (coords[1][1] / 180) * 0xffffff, // color based on latitude of endpoint
+            width: Math.random() + 1, // random width between 1 and 2
+          };
+
+          lineMesh = tb.line(lineOptions);
+
+          tb.add(lineMesh);
+        },
+
+        render: function (gl, matrix) {
+          tb.update();
+        },
+      });
+    });
+    
+      // map.addLayer({
+      //   id: "custom_layer_2",
+      //   type: "custom",
+      //   onAdd: function (map, mbxContext) {
+      //     tb = new Threebox(map, mbxContext, { defaultLights: true });
+
+      //     let coords = createGeometry(true);
+      //     for (var i = 0; i < coords.length; i++) {
+      //       coords[i][0] += 360;
+      //     }
+      //     console.log(coords);
+      //     coords[1][2] = 10000;
+      //     var lineOptions = {
+      //       geometry: coords,
+      //       color: (coords[1][1] / 180) * 0xffffff, // color based on latitude of endpoint
+      //       width: Math.random() + 1, // random width between 1 and 2
+      //     };
+
+      //     lineMesh = tb.line(lineOptions);
+
+      //     tb.add(lineMesh);
+      //   },
+
+      //   render: function (gl, matrix) {
+      //     tb.update();
+      //   },
+      // });
+	 
+      // map.addLayer({
+      //   id: "custom_layer_3",
+      //   type: "custom",
+      //   onAdd: function (map, mbxContext) {
+      //     tb = new Threebox(map, mbxContext, { defaultLights: true });
+
+      //     let coords = createGeometry(true);
+      //     for (var i = 0; i < coords.length; i++) {
+      //       coords[i][0] -= 360;
+      //     }
+      //     console.log(coords);
+      //     coords[1][2] = 10000;
+      //     var lineOptions = {
+      //       geometry: coords,
+      //       color:  0xff00ff, // color based on latitude of endpoint
+      //       width: Math.random() + 1, // random width between 1 and 2
+      //     };
+
+      //     lineMesh = tb.line(lineOptions);
+
+      //     tb.add(lineMesh);
+      //   },
+
+      //   render: function (gl, matrix) {
+      //     tb.update();
+      //   },
+      // });
+// 
+	  // 
+    // });
+
+    function createGeometry(doesCrossAntimeridian) {
+      const geometry = [
+        [139.6503, 35.6762, 0],
+        [-149.073, 62.4114, 20000],
+      ];
+
+      // To draw a line across the 180th meridian,
+      // if the longitude of the second point minus
+      // the longitude of original (or previous) point is >= 180,
+      // subtract 360 from the longitude of the second point.
+      // If it is less than 180, add 360 to the second point.
+
+      if (doesCrossAntimeridian) {
+        const startLng = geometry[0][0];
+        const endLng = geometry[1][0];
+
+        if (  endLng - startLng >= 180) {
+          geometry[1][0] += 360;
+        } else if (startLng- endLng  < 180) {
+          geometry[1][0] -= 360;
+        }
+      }
+
+      return geometry;
+    }
+
+
+	
+  </script>
+</body>
